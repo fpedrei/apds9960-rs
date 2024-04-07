@@ -51,6 +51,13 @@ where
         self.write_register(Register::PIHT, threshold)
     }
 
+    /// Set the number of times the value falls out of range for an interupt to trigger
+    pub fn set_proximity_persistence_filter(&mut self, triggers: u8) -> Result<(), I2C::Error> {
+        let mut initial = self.read_register(Register::PERS)?;
+        initial &= 0b00001111;
+        initial |= (triggers << 4) & 0b11110000;
+        self.write_register(Register::PERS, initial)
+    }
     /// Set the proximity up/right photodiode offset.
     pub fn set_proximity_up_right_offset(&mut self, offset: i8) -> Result<(), I2C::Error> {
         self.write_register(Register::POFFSET_UR, offset as u8)

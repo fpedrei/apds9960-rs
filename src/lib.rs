@@ -363,6 +363,7 @@ impl Register {
     const AIHTL: u8 = 0x86;
     const PILT: u8 = 0x89;
     const PIHT: u8 = 0x8B;
+    const PERS: u8 = 0x8C;
     const CONFIG1: u8 = 0x8D;
     const CONFIG2: u8 = 0x90;
     const ID: u8 = 0x92;
