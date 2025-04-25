@@ -45,6 +45,11 @@ where
         self.set_flag_gconfig4(GConfig4::GIEN, false)
     }
 
+    /// Clear gesture FIFO
+    pub fn clear_gesture_fifo(&mut self) -> Result<(), I2C::Error> {
+        self.set_flag_gconfig4(GConfig4::GFIFO_CLR, true)
+    }
+
     /// Set the gain of gesture readings
     pub fn set_gesture_gain_level(
         &mut self,

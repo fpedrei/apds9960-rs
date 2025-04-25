@@ -446,6 +446,7 @@ mod register {
     impl GConfig4 {
         pub const GMODE: u8 = 0b0000_0001;
         pub const GIEN: u8 = 0b0000_0010;
+        pub const GFIFO_CLR: u8 = 0b00000100;
     }
     impl_bitflags!(GConfig4, GCONFIG4);
 
@@ -496,13 +497,15 @@ where
     }
     /// Dump configuration registers
     pub fn dump(&mut self) -> std::string::String {
-        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngpulse: 0b{:08b}",
+        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngstatus: 0b{:08b}\ngflvl: 0b{:08b}\ngpulse: 0b{:08b}",
             self.read_register(Register::ENABLE).unwrap(),
             self.read_register(Register::CONFIG1).unwrap(),
             self.read_register(Register::CONFIG2).unwrap(),
             self.read_register(Register::GCONFIG1).unwrap(),
             self.read_register(Register::GCONFIG2).unwrap(),
             self.read_register(Register::GCONFIG4).unwrap(),
+            self.read_register(Register::GSTATUS).unwrap(),
+            self.read_register(Register::GFLVL).unwrap(),
             self.read_register(Register::GPULSE).unwrap())
     }
 }
