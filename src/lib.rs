@@ -177,15 +177,21 @@
 #![deny(missing_docs, unsafe_code)]
 #![no_std]
 
-extern crate embedded_hal as hal;
-use hal::blocking::i2c;
+extern crate embedded_hal;
 extern crate nb;
+extern crate std;
+
+use embedded_hal::i2c::I2c;
 
 /// All possible errors in this crate
 #[derive(Debug)]
-pub enum Error<E> {
-    /// I²C bus error
-    I2C(E),
+pub enum Apds9960Error {
+    // ...
+}
+impl embedded_hal::i2c::Error for Apds9960Error {
+    fn kind(&self) -> embedded_hal::i2c::ErrorKind {
+        todo!("Not implemented");
+    }
 }
 
 /// Gesture FIFO data threshold.
@@ -375,9 +381,9 @@ pub struct Apds9960<I2C> {
     gconfig4: register::GConfig4,
 }
 
-impl<I2C, E> Apds9960<I2C>
+impl<I2C> Apds9960<I2C>
 where
-    I2C: i2c::Write<Error = E>,
+    I2C: I2c,
 {
     /// Create new instance of the APDS9960 device.
     pub fn new(i2c: I2C) -> Self {
