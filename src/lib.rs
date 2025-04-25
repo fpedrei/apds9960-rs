@@ -209,6 +209,66 @@ pub enum GestureDataThreshold {
     Th16,
 }
 
+/// Gesture gain level
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GestureGain {
+    /// Gesture gain level 0 (1x)
+    Level0,
+    /// Gesture gain level 1 (2x)
+    Level1,
+    /// Gesture gain level 2 (4x)
+    Level2,
+    /// Gesture gain level 3 (8x)
+    Level3,
+}
+
+/// Gesture drive strength
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GestureLDrive {
+    /// Gesture drive strength 0 (100 mA)
+    Strength0,
+    /// Gesture drive strength 1 (50 mA)
+    Strength1,
+    /// Gesture drive strength 2 (25 mA)
+    Strength2,
+    /// Gesture drive strength 3 (12.5 mA)
+    Strength3,
+}
+
+/// Gesture wait time
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GestureWait {
+    /// Gesture wait time 0 (0 ms)
+    Time0,
+    /// Gesture wait time 1 (2.8 ms)
+    Time1,
+    /// Gesture wait time 2 (5.6 ms)
+    Time2,
+    /// Gesture wait time 3 (8.4 ms)
+    Time3,
+    /// Gesture wait time 4 (14.0 ms)
+    Time4,
+    /// Gesture wait time 5 (22.4 ms)
+    Time5,
+    /// Gesture wait time 6 (30.8 ms)
+    Time6,
+    /// Gesture wait time 7 (39.2 ms)
+    Time7,
+}
+
+/// Gesture pulse length
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GesturePulseLength {
+    /// Pulse length 4 µs
+    Length0,
+    /// Pulse length 8 µs
+    Length1,
+    /// Pulse length 16 µs
+    Length2,
+    /// Pulse length 32 µs
+    Length3,
+}
+
 /// Color / ambient light data.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LightData {
@@ -247,10 +307,12 @@ impl Register {
     const GPENTH: u8 = 0xA0;
     const GPEXTH: u8 = 0xA1;
     const GCONFIG1: u8 = 0xA2;
+    const GCONFIG2: u8 = 0xA3;
     const GOFFSET_U: u8 = 0xA4;
     const GOFFSET_D: u8 = 0xA5;
-    const GOFFSET_L: u8 = 0xA6;
-    const GOFFSET_R: u8 = 0xA7;
+    const GPULSE: u8 = 0xA6;
+    const GOFFSET_L: u8 = 0xA7;
+    const GOFFSET_R: u8 = 0xA8;
     const GCONFIG4: u8 = 0xAB;
     const GFLVL: u8 = 0xAE;
     const GSTATUS: u8 = 0xAF;
@@ -345,6 +407,33 @@ mod register {
     impl_bitflags!(GConfig1, GCONFIG1);
 
     #[derive(Debug, Default)]
+    pub struct GConfig2(u8);
+    impl GConfig2 {
+        pub const GGAIN1: u8 = 0b0100_0000;
+        pub const GGAIN2: u8 = 0b0010_0000;
+        pub const GDRIVE1: u8 = 0b0001_0000;
+        pub const GDRIVE2: u8 = 0b0000_1000;
+        pub const GWAIT1: u8 = 0b0000_0100;
+        pub const GWAIT2: u8 = 0b0000_0010;
+        pub const GWAIT3: u8 = 0b0000_0001;
+    }
+    impl_bitflags!(GConfig2, GCONFIG2);
+
+    #[derive(Debug, Default)]
+    pub struct GPulse(u8);
+    impl GPulse {
+        pub const GPLEN1: u8 = 0b1000_0000;
+        pub const GPLEN2: u8 = 0b0100_0000;
+        pub const GPULSE1: u8 = 0b0010_0000;
+        pub const GPULSE2: u8 = 0b0001_0000;
+        pub const GPULSE3: u8 = 0b0000_1000;
+        pub const GPULSE4: u8 = 0b0000_0100;
+        pub const GPULSE5: u8 = 0b0000_0010;
+        pub const GPULSE6: u8 = 0b0000_0001;
+    }
+    impl_bitflags!(GPulse, GPULSE);
+
+    #[derive(Debug, Default)]
     pub struct Status(u8);
     impl Status {
         pub const AVALID: u8 = 0b0000_0001;
@@ -378,7 +467,9 @@ pub struct Apds9960<I2C> {
     config1: register::Config1,
     config2: register::Config2,
     gconfig1: register::GConfig1,
+    gconfig2: register::GConfig2,
     gconfig4: register::GConfig4,
+    gpulse: register::GPulse,
 }
 
 impl<I2C> Apds9960<I2C>
@@ -393,13 +484,26 @@ where
             config1: register::Config1::default(),
             config2: register::Config2::default(),
             gconfig1: register::GConfig1::default(),
+            gconfig2: register::GConfig2::default(),
             gconfig4: register::GConfig4::default(),
+            gpulse: register::GPulse::default(),
         }
     }
 
     /// Destroy driver instance, return I²C bus instance.
     pub fn destroy(self) -> I2C {
         self.i2c
+    }
+    /// Dump configuration registers
+    pub fn dump(&mut self) -> std::string::String {
+        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngpulse: 0b{:08b}",
+            self.read_register(Register::ENABLE).unwrap(),
+            self.read_register(Register::CONFIG1).unwrap(),
+            self.read_register(Register::CONFIG2).unwrap(),
+            self.read_register(Register::GCONFIG1).unwrap(),
+            self.read_register(Register::GCONFIG2).unwrap(),
+            self.read_register(Register::GCONFIG4).unwrap(),
+            self.read_register(Register::GPULSE).unwrap())
     }
 }
 

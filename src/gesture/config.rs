@@ -1,7 +1,7 @@
 use embedded_hal::i2c::I2c;
 use {
-    register::{Enable, GConfig1, GConfig4},
-    Apds9960, BitFlags, GestureDataThreshold, Register, DEV_ADDR
+    register::{Enable, GConfig1, GConfig2, GConfig4, GPulse},
+    Apds9960, BitFlags, GestureDataThreshold, GestureGain, GestureLDrive, GestureWait, GesturePulseLength, Register, DEV_ADDR
 };
 
 /// Gesture engine configuration.
@@ -45,19 +45,125 @@ where
         self.set_flag_gconfig4(GConfig4::GIEN, false)
     }
 
+    /// Set the gain of gesture readings
+    pub fn set_gesture_gain_level(
+        &mut self,
+        gain: GestureGain,
+    ) -> Result<(), I2C::Error> {
+        use GestureGain as GAIN;
+        let flags = match gain {
+            GAIN::Level0 => (false, false),
+            GAIN::Level1 => (false, true),
+            GAIN::Level2 => (true, false),
+            GAIN::Level3 => (true, true),
+        };
+        let new = self
+            .gconfig2
+            .with(GConfig2::GGAIN1, flags.0)
+            .with(GConfig2::GGAIN2, flags.1);
+        self.config_register(&new)?;
+        self.gconfig2 = new;
+        Ok(())
+    }
+
+    /// Set the gesture LED drive strength
+    pub fn set_gesture_led_drive_strength(
+        &mut self,
+        strength: GestureLDrive
+    ) -> Result<(), I2C::Error> {
+        use GestureLDrive as DRIVE;
+        let flags = match strength {
+            DRIVE::Strength0 => (false, false),
+            DRIVE::Strength1 => (false, true),
+            DRIVE::Strength2 => (true, false),
+            DRIVE::Strength3 => (true, true),
+        };
+        let new = self
+            .gconfig2
+            .with(GConfig2::GDRIVE1, flags.0)
+            .with(GConfig2::GDRIVE2, flags.1);
+        self.config_register(&new)?;
+        self.gconfig2 = new;
+        Ok(())
+    }
+
+    /// Set the gesture wait time
+    pub fn set_gesture_wait_time(
+        &mut self,
+        time: GestureWait
+    ) -> Result<(), I2C::Error> {
+        use GestureWait as WAIT;
+        let flags = match time {
+            WAIT::Time0 => (false, false, false),
+            WAIT::Time1 => (false, false, true),
+            WAIT::Time2 => (false, true, false),
+            WAIT::Time3 => (false, true, true),
+            WAIT::Time4 => (true, false, false),
+            WAIT::Time5 => (true, false, true),
+            WAIT::Time6 => (true, true, false),
+            WAIT::Time7 => (true, true, true),
+        };
+        let new = self
+            .gconfig2
+            .with(GConfig2::GWAIT1, flags.0)
+            .with(GConfig2::GWAIT2, flags.1)
+            .with(GConfig2::GWAIT3, flags.2);
+        self.config_register(&new)?;
+        self.gconfig2 = new;
+        Ok(())
+    }
+
+    /// Set the gesture pulse length
+    pub fn set_gesture_pulse_length(
+        &mut self,
+        length: GesturePulseLength
+    ) -> Result<(), I2C::Error> {
+        use GesturePulseLength as PULSE;
+        let flags = match length {
+            PULSE::Length0 => (false, false),
+            PULSE::Length1 => (false, true),
+            PULSE::Length2 => (true, false),
+            PULSE::Length3 => (true, true),
+        };
+        let new = self
+            .gpulse
+            .with(GPulse::GPLEN1, flags.0)
+            .with(GPulse::GPLEN2, flags.1);
+        self.config_register(&new)?;
+        self.gpulse = new;
+        Ok(())
+    }
+
+    /// Set the number of gesture pulses
+    pub fn set_gesture_pulse_number(
+        &mut self,
+        number: u8,
+    ) -> Result<(), I2C::Error> {
+        let new = self
+            .gpulse
+            .with(GPulse::GPULSE1, GPulse::GPULSE1 & number == GPulse::GPULSE1)
+            .with(GPulse::GPULSE2, GPulse::GPULSE2 & number == GPulse::GPULSE2)
+            .with(GPulse::GPULSE3, GPulse::GPULSE3 & number == GPulse::GPULSE3)
+            .with(GPulse::GPULSE4, GPulse::GPULSE4 & number == GPulse::GPULSE4)
+            .with(GPulse::GPULSE5, GPulse::GPULSE5 & number == GPulse::GPULSE5)
+            .with(GPulse::GPULSE6, GPulse::GPULSE6 & number == GPulse::GPULSE6);
+        self.config_register(&new)?;
+        self.gpulse = new;
+        Ok(())
+    }
+
     /// Set the threshold of amount of available data in the gesture FIFO registers.
     pub fn set_gesture_data_level_threshold(
         &mut self,
         threshold: GestureDataThreshold,
     ) -> Result<(), I2C::Error> {
         use GestureDataThreshold as GDTH;
-        let flags;
-        match threshold {
-            GDTH::Th1 => flags = (false, false),
-            GDTH::Th4 => flags = (false, true),
-            GDTH::Th8 => flags = (true, false),
-            GDTH::Th16 => flags = (true, true),
-        }
+        let flags = match threshold {
+            GDTH::Th1 => (false, false),
+            GDTH::Th4 => (false, true),
+            GDTH::Th8 => (true, false),
+            GDTH::Th16 => (true, true),
+        };
         let new = self
             .gconfig1
             .with(GConfig1::GFIFOTH1, flags.0)
