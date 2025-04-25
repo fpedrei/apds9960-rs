@@ -1,61 +1,63 @@
-use hal::blocking::i2c;
+extern crate embedded_hal;
+
+use embedded_hal::i2c::I2c;
 use {
     register::{Config2, Enable, Status},
-    Apds9960, BitFlags, Error, Register, DEV_ADDR,
+    Apds9960, BitFlags, DEV_ADDR, Register
 };
 
 /// Proximity.
-impl<I2C, E> Apds9960<I2C>
+impl<I2C> Apds9960<I2C>
 where
-    I2C: i2c::Write<Error = E> + i2c::WriteRead<Error = E>,
+    I2C: I2c,
 {
     /// Enable proximity detection
-    pub fn enable_proximity(&mut self) -> Result<(), Error<E>> {
+    pub fn enable_proximity(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_enable(Enable::PEN, true)
     }
 
     /// Disable proximity detection
-    pub fn disable_proximity(&mut self) -> Result<(), Error<E>> {
+    pub fn disable_proximity(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_enable(Enable::PEN, false)
     }
 
     /// Enable proximity interrupt generation
-    pub fn enable_proximity_interrupts(&mut self) -> Result<(), Error<E>> {
+    pub fn enable_proximity_interrupts(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_enable(Enable::PIEN, true)
     }
 
     /// Disable proximity interrupt generation
-    pub fn disable_proximity_interrupts(&mut self) -> Result<(), Error<E>> {
+    pub fn disable_proximity_interrupts(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_enable(Enable::PIEN, false)
     }
 
     /// Enable proximity saturation interrupt generation
-    pub fn enable_proximity_saturation_interrupts(&mut self) -> Result<(), Error<E>> {
+    pub fn enable_proximity_saturation_interrupts(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_config2(Config2::PSIEN, true)
     }
 
     /// Disable proximity saturation interrupt generation
-    pub fn disable_proximity_saturation_interrupts(&mut self) -> Result<(), Error<E>> {
+    pub fn disable_proximity_saturation_interrupts(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_config2(Config2::PSIEN, false)
     }
 
     /// Set the proximity interrupt low threshold.
-    pub fn set_proximity_low_threshold(&mut self, threshold: u8) -> Result<(), Error<E>> {
+    pub fn set_proximity_low_threshold(&mut self, threshold: u8) -> Result<(), I2C::Error> {
         self.write_register(Register::PILT, threshold)
     }
 
     /// Set the proximity interrupt high threshold.
-    pub fn set_proximity_high_threshold(&mut self, threshold: u8) -> Result<(), Error<E>> {
+    pub fn set_proximity_high_threshold(&mut self, threshold: u8) -> Result<(), I2C::Error> {
         self.write_register(Register::PIHT, threshold)
     }
 
     /// Set the proximity up/right photodiode offset.
-    pub fn set_proximity_up_right_offset(&mut self, offset: i8) -> Result<(), Error<E>> {
+    pub fn set_proximity_up_right_offset(&mut self, offset: i8) -> Result<(), I2C::Error> {
         self.write_register(Register::POFFSET_UR, offset as u8)
     }
 
     /// Set the proximity down/left photodiode offset.
-    pub fn set_proximity_down_left_offset(&mut self, offset: i8) -> Result<(), Error<E>> {
+    pub fn set_proximity_down_left_offset(&mut self, offset: i8) -> Result<(), I2C::Error> {
         self.write_register(Register::POFFSET_DL, offset as u8)
     }
 
@@ -64,7 +66,7 @@ where
         &mut self,
         offset_up_right: i8,
         offset_down_left: i8,
-    ) -> Result<(), Error<E>> {
+    ) -> Result<(), I2C::Error> {
         self.i2c
             .write(
                 DEV_ADDR,
@@ -74,18 +76,17 @@ where
                     offset_down_left as u8,
                 ],
             )
-            .map_err(Error::I2C)
     }
 
     /// Clear proximity interrupt.
-    pub fn clear_proximity_interrupt(&mut self) -> Result<(), Error<E>> {
+    pub fn clear_proximity_interrupt(&mut self) -> Result<(), I2C::Error> {
         self.touch_register(Register::PICLEAR)
     }
 
     /// Read the proximity sensor data.
     ///
     /// Returns `nb::Error::WouldBlock` as long as the data is not ready.
-    pub fn read_proximity(&mut self) -> nb::Result<u8, Error<E>> {
+    pub fn read_proximity(&mut self) -> nb::Result<u8, I2C::Error> {
         if !self.is_proximity_data_valid().map_err(nb::Error::Other)? {
             return Err(nb::Error::WouldBlock);
         }
@@ -97,7 +98,7 @@ where
     ///
     /// This is checked internally in `read_proximity()` as well.
     #[allow(clippy::wrong_self_convention)]
-    pub fn is_proximity_data_valid(&mut self) -> Result<bool, Error<E>> {
+    pub fn is_proximity_data_valid(&mut self) -> Result<bool, I2C::Error> {
         let status = self.read_register(Register::STATUS)?;
         Ok(Status::create(status).is(Status::PVALID, true))
     }
