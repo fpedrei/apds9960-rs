@@ -442,6 +442,12 @@ mod register {
     }
     impl_bitflags!(Enable, ENABLE);
 
+    #[derive(Debug, Default)]
+    pub struct Pers(u8);
+    impl Pers {
+    }
+    impl_bitflags!(Pers, PERS);
+
     #[derive(Debug)]
     pub struct Config1(u8);
     impl Config1 {
@@ -509,6 +515,8 @@ mod register {
     impl Status {
         pub const AVALID: u8 = 0b0000_0001;
         pub const PVALID: u8 = 0b0000_0010;
+        pub const PGINT: u8 = 0b0001_0000;
+        pub const PGSAT: u8 = 0b0010_0000;
     }
     impl_bitflags!(Status, STATUS);
 

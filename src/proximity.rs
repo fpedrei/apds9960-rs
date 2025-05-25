@@ -59,9 +59,16 @@ where
         self.write_register(Register::PERS, initial)
     }
 
-    /// Checks if a proximity interupt has occured
+    /// Checks if a proximity interrupt has occured
     pub fn get_proximity_interrupt(&mut self) -> Result<bool, I2C::Error> {
-        Ok(self.read_register(Register::STATUS)? & 0b0010_0000 > 0)
+        let status = self.read_register(Register::STATUS)?;
+        Ok(Status::create(status).is(Status::PGINT, true))
+    }
+
+    /// Checks if proximity saturation has been reached
+    pub fn get_proximity_saturation(&mut self) -> Result<bool, I2C::Error> {
+        let status = self.read_register(Register::STATUS)?;
+        Ok(Status::create(status).is(Status::PGSAT, true))
     }
 
     /// Set the proximity up/right photodiode offset.
