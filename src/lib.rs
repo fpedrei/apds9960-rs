@@ -181,6 +181,7 @@ extern crate embedded_hal;
 extern crate nb;
 extern crate std;
 
+use std::fmt;
 use embedded_hal::i2c::I2c;
 
 /// All possible errors in this crate
@@ -209,6 +210,19 @@ pub enum GestureDataThreshold {
     Th16,
 }
 
+impl std::fmt::Display for GestureDataThreshold {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match self {
+                GestureDataThreshold::Th1 => 1,
+                GestureDataThreshold::Th4 => 4,
+                GestureDataThreshold::Th8 => 8,
+                GestureDataThreshold::Th16 => 16,
+            }
+        )
+    }
+}
+
 /// Gesture gain level
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GestureGain {
@@ -222,6 +236,19 @@ pub enum GestureGain {
     Level3,
 }
 
+impl std::fmt::Display for GestureGain {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match self {
+                GestureGain::Level0 => 0,
+                GestureGain::Level1 => 1,
+                GestureGain::Level2 => 2,
+                GestureGain::Level3 => 3,
+            }
+        )
+    }
+}
+
 /// Gesture drive strength
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GestureLDrive {
@@ -233,6 +260,19 @@ pub enum GestureLDrive {
     Strength2,
     /// Gesture drive strength 3 (12.5 mA)
     Strength3,
+}
+
+impl std::fmt::Display for GestureLDrive {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{} mA",
+            match self {
+                GestureLDrive::Strength0 => 100.,
+                GestureLDrive::Strength1 => 50.,
+                GestureLDrive::Strength2 => 25.,
+                GestureLDrive::Strength3 => 12.5,
+            }
+        )
+    }
 }
 
 /// Gesture wait time
@@ -256,6 +296,23 @@ pub enum GestureWait {
     Time7,
 }
 
+impl std::fmt::Display for GestureWait {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ms ",
+            match self {
+                GestureWait::Time0 => 0.,
+                GestureWait::Time1 => 2.8,
+                GestureWait::Time2 => 5.60,
+                GestureWait::Time3 => 8.4,
+                GestureWait::Time4 => 14.0,
+                GestureWait::Time5 => 22.4,
+                GestureWait::Time6 => 30.8,
+                GestureWait::Time7 => 39.2,
+            }
+        )
+    }
+}
+
 /// Gesture pulse length
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GesturePulseLength {
@@ -267,6 +324,19 @@ pub enum GesturePulseLength {
     Length2,
     /// Pulse length 32 µs
     Length3,
+}
+
+impl std::fmt::Display for GesturePulseLength {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{} µs",
+            match self {
+                GesturePulseLength::Length0 => 4,
+                GesturePulseLength::Length1 => 8,
+                GesturePulseLength::Length2 => 16,
+                GesturePulseLength::Length3 => 32,
+            }
+        )
+    }
 }
 
 /// Color / ambient light data.
