@@ -1,7 +1,7 @@
 use embedded_hal::i2c::I2c;
 use {
-    register::{Enable, GConfig1, GConfig2, GConfig4, GPulse},
-    Apds9960, BitFlags, GestureDataThreshold, GestureGain, GestureLDrive, GestureWait, GesturePulseLength, Register, DEV_ADDR
+    register::{Enable, GConfig1, GConfig2, GConfig3, GConfig4, GPulse},
+    Apds9960, BitFlags, GestureDataThreshold, GestureGain, GestureLDrive, GestureWait, GesturePulseLength, GestureDimension, Register, DEV_ADDR
 };
 
 /// Gesture engine configuration.
@@ -154,6 +154,26 @@ where
             .with(GPulse::GPULSE6, GPulse::GPULSE6 & number == GPulse::GPULSE6);
         self.config_register(&new)?;
         self.gpulse = new;
+        Ok(())
+    }
+
+    /// Set the active gesture dimensions
+    pub fn set_gesture_dimensions(
+        &mut self,
+        dimensions: GestureDimension
+    ) -> Result<(), I2C::Error> {
+        use GestureDimension as DIMENSION;
+        let flags = match dimensions {
+            DIMENSION::Both => (false, false),
+            DIMENSION::Horizontal => (false, true),
+            DIMENSION::Vertical => (true, false),
+        };
+        let new = self
+            .gconfig3
+            .with(GConfig3::GDIMS1, flags.0)
+            .with(GConfig3::GDIMS2, flags.1);
+        self.config_register(&new)?;
+        self.gconfig3 = new;
         Ok(())
     }
 

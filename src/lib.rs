@@ -339,6 +339,29 @@ impl std::fmt::Display for GesturePulseLength {
     }
 }
 
+/// Gesture dimension select
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GestureDimension {
+    /// Both pairs active
+    Both,
+    /// Only Up-Down pair is active
+    Vertical,
+    /// Only Left-Right pair is active
+    Horizontal,
+}
+
+impl std::fmt::Display for GestureDimension {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match self {
+                GestureDimension::Both => "both",
+                GestureDimension::Vertical => "vertical",
+                GestureDimension::Horizontal => "horizontal",
+            }
+        )
+    }
+}
+
 /// Color / ambient light data.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LightData {
@@ -391,7 +414,7 @@ impl Register {
     const GPULSE: u8 = 0xA6;
     const GOFFSET_L: u8 = 0xA7;
     const GOFFSET_R: u8 = 0xA9;
-    // const GCONFIG3: u8 = 0xAA;
+    const GCONFIG3: u8 = 0xAA;
     const GCONFIG4: u8 = 0xAB;
     const GFLVL: u8 = 0xAE;
     const GSTATUS: u8 = 0xAF;
@@ -524,6 +547,14 @@ mod register {
     impl_bitflags!(GPulse, GPULSE);
 
     #[derive(Debug, Default)]
+    pub struct GConfig3(u8);
+    impl GConfig3 {
+        pub const GDIMS1: u8 = 0b0000_0010;
+        pub const GDIMS2: u8 = 0b0000_0001;
+    }
+    impl_bitflags!(GConfig3, GCONFIG3);
+
+    #[derive(Debug, Default)]
     pub struct Status(u8);
     impl Status {
         pub const AVALID: u8 = 0b0000_0001;
@@ -561,6 +592,7 @@ pub struct Apds9960<I2C> {
     config2: register::Config2,
     gconfig1: register::GConfig1,
     gconfig2: register::GConfig2,
+    gconfig3: register::GConfig3,
     gconfig4: register::GConfig4,
     gpulse: register::GPulse,
 }
@@ -578,6 +610,7 @@ where
             config2: register::Config2::default(),
             gconfig1: register::GConfig1::default(),
             gconfig2: register::GConfig2::default(),
+            gconfig3: register::GConfig3::default(),
             gconfig4: register::GConfig4::default(),
             gpulse: register::GPulse::default(),
         }
@@ -589,13 +622,14 @@ where
     }
     /// Dump configuration registers
     pub fn dump(&mut self) -> std::string::String {
-        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\npers: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngstatus: 0b{:08b}\ngflvl: 0b{:08b}\ngpulse: 0b{:08b}",
+        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\npers: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig3: 0b{:08b}\ngconfig4: 0b{:08b}\ngstatus: 0b{:08b}\ngflvl: 0b{:08b}\ngpulse: 0b{:08b}",
             self.read_register(Register::ENABLE).unwrap(),
             self.read_register(Register::CONFIG1).unwrap(),
-            self.read_register(Register::CONFIG1).unwrap(),
+            self.read_register(Register::CONFIG2).unwrap(),
             self.read_register(Register::PERS).unwrap(),
             self.read_register(Register::GCONFIG1).unwrap(),
             self.read_register(Register::GCONFIG2).unwrap(),
+            self.read_register(Register::GCONFIG3).unwrap(),
             self.read_register(Register::GCONFIG4).unwrap(),
             self.read_register(Register::GSTATUS).unwrap(),
             self.read_register(Register::GFLVL).unwrap(),
