@@ -470,7 +470,7 @@ mod register {
 
     impl Default for Config1 {
         fn default() -> Self {
-            Self { 0: 0x40 }
+            Self(0x40)
         }
     }
 
@@ -484,7 +484,7 @@ mod register {
 
     impl Default for Config2 {
         fn default() -> Self {
-            Self { 0: 1 }
+            Self(0x01)
         }
     }
 
