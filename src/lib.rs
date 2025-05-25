@@ -390,7 +390,7 @@ impl Register {
     const GOFFSET_D: u8 = 0xA5;
     const GPULSE: u8 = 0xA6;
     const GOFFSET_L: u8 = 0xA7;
-    const GOFFSET_R: u8 = 0xA8;
+    const GOFFSET_R: u8 = 0xA9;
     // const GCONFIG3: u8 = 0xAA;
     const GCONFIG4: u8 = 0xAB;
     const GFLVL: u8 = 0xAE;
