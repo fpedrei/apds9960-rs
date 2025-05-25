@@ -1,6 +1,6 @@
 use embedded_hal::i2c::I2c;
 use {
-    register::{Config2, Enable, Status},
+    register::{Config2, Enable, Status, Pers},
     Apds9960, BitFlags, LightData, Register
 };
 
@@ -36,6 +36,14 @@ where
     /// Disable ambient light interrupt generation.
     pub fn disable_light_interrupts(&mut self) -> Result<(), I2C::Error> {
         self.set_flag_enable(Enable::AIEN, false)
+    }
+
+    /// Set the number of times the value falls out of range for an interrupt to trigger
+    pub fn set_light_persistence_filter(&mut self, triggers: u8) -> Result<(), I2C::Error> {
+        let mut initial = self.read_register(Register::PERS)?;
+        initial &= !Pers::APERS;
+        initial |= (triggers << 4) & Pers::APERS;
+        self.write_register(Register::PERS, initial)
     }
 
     /// Enable clear channel ambient light saturation interrupt generation.

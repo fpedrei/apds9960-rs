@@ -360,18 +360,25 @@ impl Register {
     const ATIME: u8 = 0x81;
     const WTIME: u8 = 0x83;
     const AILTL: u8 = 0x84;
+    // const AILTH: u8 = 0x85;
     const AIHTL: u8 = 0x86;
+    // const AIHTH: u8 = 0x87;
     const PILT: u8 = 0x89;
     const PIHT: u8 = 0x8B;
     const PERS: u8 = 0x8C;
     const CONFIG1: u8 = 0x8D;
+    // const PPULSE: u8 = 0x8E;
     const CONFIG2: u8 = 0x90;
     const ID: u8 = 0x92;
     const STATUS: u8 = 0x93;
     const CDATAL: u8 = 0x94;
+    // const CDATAH: u8 = 0x95;
     const RDATAL: u8 = 0x96;
+    // const RDATAH: u8 = 0x97;
     const GDATAL: u8 = 0x98;
+    // const GDATAH: u8 = 0x99;
     const BDATAL: u8 = 0x9A;
+    // const BDATAH: u8 = 0x9B;
     const PDATA: u8 = 0x9C;
     const POFFSET_UR: u8 = 0x9D;
     const POFFSET_DL: u8 = 0x9E;
@@ -384,6 +391,7 @@ impl Register {
     const GPULSE: u8 = 0xA6;
     const GOFFSET_L: u8 = 0xA7;
     const GOFFSET_R: u8 = 0xA8;
+    // const GCONFIG3: u8 = 0xAA;
     const GCONFIG4: u8 = 0xAB;
     const GFLVL: u8 = 0xAE;
     const GSTATUS: u8 = 0xAF;
@@ -392,6 +400,9 @@ impl Register {
     const CICLEAR: u8 = 0xE6;
     const AICLEAR: u8 = 0xE7;
     const GFIFO_U: u8 = 0xFC;
+    // const GFIFO_D: u8 = 0xFD;
+    // const GFIFO_L: u8 = 0xFE;
+    // const GFIFO_R: u8 = 0xFF;
 }
 
 trait BitFlags<T = Self> {
@@ -445,6 +456,8 @@ mod register {
     #[derive(Debug, Default)]
     pub struct Pers(u8);
     impl Pers {
+        pub const PPERS: u8 = 0b1111_0000;
+        pub const APERS: u8 = 0b0000_1111;
     }
     impl_bitflags!(Pers, PERS);
 
@@ -576,10 +589,11 @@ where
     }
     /// Dump configuration registers
     pub fn dump(&mut self) -> std::string::String {
-        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngstatus: 0b{:08b}\ngflvl: 0b{:08b}\ngpulse: 0b{:08b}",
+        std::format!("registers:\nenable: 0b{:08b}\nconfig1: 0b{:08b}\nconfig2: 0b{:08b}\npers: 0b{:08b}\ngconfig1: 0b{:08b}\ngconfig2: 0b{:08b}\ngconfig4: 0b{:08b}\ngstatus: 0b{:08b}\ngflvl: 0b{:08b}\ngpulse: 0b{:08b}",
             self.read_register(Register::ENABLE).unwrap(),
             self.read_register(Register::CONFIG1).unwrap(),
-            self.read_register(Register::CONFIG2).unwrap(),
+            self.read_register(Register::CONFIG1).unwrap(),
+            self.read_register(Register::PERS).unwrap(),
             self.read_register(Register::GCONFIG1).unwrap(),
             self.read_register(Register::GCONFIG2).unwrap(),
             self.read_register(Register::GCONFIG4).unwrap(),

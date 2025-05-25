@@ -2,7 +2,7 @@ extern crate embedded_hal;
 
 use embedded_hal::i2c::I2c;
 use {
-    register::{Config2, Enable, Status},
+    register::{Config2, Enable, Status, Pers},
     Apds9960, BitFlags, DEV_ADDR, Register
 };
 
@@ -54,8 +54,8 @@ where
     /// Set the number of times the value falls out of range for an interrupt to trigger
     pub fn set_proximity_persistence_filter(&mut self, triggers: u8) -> Result<(), I2C::Error> {
         let mut initial = self.read_register(Register::PERS)?;
-        initial &= 0b00001111;
-        initial |= (triggers << 4) & 0b11110000;
+        initial &= !Pers::PPERS;
+        initial |= (triggers << 4) & Pers::PPERS;
         self.write_register(Register::PERS, initial)
     }
 
